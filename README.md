@@ -172,8 +172,8 @@ Dùng **Python 3.11+** (notebook được chạy với Python 3.13).
 ### 1. Lấy mã nguồn
 
 ```powershell
-git clone https://github.com/<your-account>/<repo-name>.git
-cd <repo-name>
+git clone https://github.com/NguyenAnh1421/Early-Warning-At-Risk-Students-OULAD.git
+cd Early-Warning-At-Risk-Students-OULAD
 ```
 
 ### 2. Tạo môi trường
