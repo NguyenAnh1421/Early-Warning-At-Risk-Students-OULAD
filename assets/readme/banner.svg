@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 360" width="1280" height="360" role="img" aria-label="Early warning timeline: student activity up to the 40% assessment-weight cutoff, with project statistics">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1b2a"/>
+      <stop offset="1" stop-color="#1b2a41"/>
+    </linearGradient>
+    <linearGradient id="past" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4C9F70" stop-opacity="0.15"/>
+      <stop offset="1" stop-color="#4C9F70" stop-opacity="0.55"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="360" fill="url(#bg)"/>
+
+  <!-- subtle grid -->
+  <g stroke="#ffffff" stroke-opacity="0.04">
+    <path d="M0 60H1280M0 120H1280M0 180H1280M0 240H1280M0 300H1280"/>
+    <path d="M160 0V360M320 0V360M480 0V360M640 0V360M800 0V360M960 0V360M1120 0V360"/>
+  </g>
+
+  <!-- title -->
+  <text x="64" y="78" fill="#e8f1ff" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="34" font-weight="700">Early Warning for At-Risk Students</text>
+  <text x="64" y="112" fill="#9fb3c8" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="18">OULAD · SQL integration · Logistic Regression &amp; Random Forest · ADY201m · Group 6</text>
+
+  <!-- activity bars (observed window) -->
+  <rect x="64" y="160" width="620" height="110" rx="6" fill="url(#past)"/>
+  <g fill="#7fd1a3">
+    <rect x="80"  y="232" width="14" height="30"/><rect x="104" y="214" width="14" height="48"/>
+    <rect x="128" y="240" width="14" height="22"/><rect x="152" y="200" width="14" height="62"/>
+    <rect x="176" y="222" width="14" height="40"/><rect x="200" y="190" width="14" height="72"/>
+    <rect x="224" y="226" width="14" height="36"/><rect x="248" y="208" width="14" height="54"/>
+    <rect x="272" y="236" width="14" height="26"/><rect x="296" y="196" width="14" height="66"/>
+    <rect x="320" y="218" width="14" height="44"/><rect x="344" y="230" width="14" height="32"/>
+    <rect x="368" y="204" width="14" height="58"/><rect x="392" y="244" width="14" height="18"/>
+    <rect x="416" y="212" width="14" height="50"/><rect x="440" y="228" width="14" height="34"/>
+    <rect x="464" y="198" width="14" height="64"/><rect x="488" y="238" width="14" height="24"/>
+    <rect x="512" y="216" width="14" height="46"/><rect x="536" y="246" width="14" height="16"/>
+    <rect x="560" y="224" width="14" height="38"/><rect x="584" y="250" width="14" height="12"/>
+    <rect x="608" y="234" width="14" height="28"/><rect x="632" y="252" width="14" height="10"/>
+  </g>
+
+  <!-- future (hidden) window -->
+  <rect x="684" y="160" width="532" height="110" rx="6" fill="#ffffff" fill-opacity="0.03" stroke="#ffffff" stroke-opacity="0.12" stroke-dasharray="6 6"/>
+  <text x="950" y="222" fill="#6b7f95" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="16" text-anchor="middle">future data · not used</text>
+
+  <!-- cutoff marker -->
+  <line x1="684" y1="146" x2="684" y2="286" stroke="#f2b84b" stroke-width="3"/>
+  <circle cx="684" cy="146" r="6" fill="#f2b84b"/>
+  <text x="694" y="150" fill="#f2b84b" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="15" font-weight="600">cutoff_day · ≥ 40% assessment weight</text>
+
+  <!-- stats -->
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif">
+    <text x="64"  y="324" fill="#e8f1ff" font-size="24" font-weight="700">25,219</text>
+    <text x="64"  y="344" fill="#9fb3c8" font-size="13">enrolments</text>
+    <text x="250" y="324" fill="#e8f1ff" font-size="24" font-weight="700">7 → 1</text>
+    <text x="250" y="344" fill="#9fb3c8" font-size="13">tables integrated</text>
+    <text x="436" y="324" fill="#e8f1ff" font-size="24" font-weight="700">39.0%</text>
+    <text x="436" y="344" fill="#9fb3c8" font-size="13">at-risk rate</text>
+    <text x="622" y="324" fill="#e8f1ff" font-size="24" font-weight="700">2014J</text>
+    <text x="622" y="344" fill="#9fb3c8" font-size="13">temporal test term</text>
+    <text x="808" y="324" fill="#e8f1ff" font-size="24" font-weight="700">0.844</text>
+    <text x="808" y="344" fill="#9fb3c8" font-size="13">best ROC-AUC</text>
+    <text x="994" y="324" fill="#e8f1ff" font-size="24" font-weight="700">0.790</text>
+    <text x="994" y="344" fill="#9fb3c8" font-size="13">best PR-AUC</text>
+  </g>
+</svg>
