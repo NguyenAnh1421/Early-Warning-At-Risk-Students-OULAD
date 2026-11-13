@@ -185,15 +185,24 @@ python -m venv .venv
 
 ### 3. Chuẩn bị dữ liệu
 
-Notebook đọc file đã tích hợp **`Intergrated_data.csv`** (25,219 × 17) ở thư mục gốc repo.
+Dữ liệu của từng giai đoạn đã có sẵn trong thư mục [`data/`](data):
+
+| Thư mục | Giai đoạn | Nội dung |
+| --- | --- | --- |
+| [`data/raw/`](data/raw) | Dữ liệu gốc | 7 bảng CSV OULAD + `OULAD.names`. `studentVle.csv` (433 MB) vượt giới hạn 100 MB của GitHub nên được nén thành `studentVle.csv.gz` (41 MB); pandas đọc trực tiếp được, hoặc giải nén bằng `gzip -dk data/raw/studentVle.csv.gz`. |
+| [`data/integrated/`](data/integrated) | Sau tích hợp SQL | `Intergrated_data.csv` (25,219 × 17), export từ view `df_raw_v`. |
+| [`data/cleaned/`](data/cleaned) | Sau làm sạch | `cleaned_dataset.csv`, output phần 3 của notebook. |
+| [`data/eda/`](data/eda) | Sau EDA & feature engineering | `features.csv`, output phần 4 của notebook. |
+
+Notebook đọc/ghi các file này ở **thư mục gốc repo**, nên trước khi chạy hãy copy `data/integrated/Intergrated_data.csv` ra thư mục gốc.
 
 Nếu muốn chạy lại toàn bộ pipeline từ dữ liệu gốc:
 
-1. Tải [OULAD từ UCI](https://archive.ics.uci.edu/dataset/349) và giải nén 7 file CSV vào thư mục `../prj/`, tức là thư mục **ngang hàng** với repo. Đây là đường dẫn `PRJ` khai báo ở đầu notebook.
+1. Giải nén `data/raw/studentVle.csv.gz`, rồi trỏ đường dẫn `PRJ` ở đầu notebook tới `data/raw` (mặc định là `../prj/`).
 2. Chạy phần 2 của notebook để nạp các bảng vào `oulad.db`.
 3. Chạy [`integrate.sql`](integrate.sql) trên `oulad.db` và export view `df_raw_v` ra `Intergrated_data.csv`.
 
-Dữ liệu gốc (~450 MB) và `oulad.db` (~560 MB) quá lớn để đưa lên GitHub nên đã được liệt kê trong `.gitignore`.
+`oulad.db` (~330 MB) được sinh lại từ CSV gốc nên không đưa lên GitHub.
 
 ### 4. Chạy notebook
 
@@ -212,6 +221,11 @@ Chọn kernel `.venv`, restart rồi chạy từ trên xuống. Notebook sẽ t�
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
+├── data/
+│   ├── raw/          # 7 bảng OULAD gốc (studentVle nén .gz)
+│   ├── integrated/   # Intergrated_data.csv
+│   ├── cleaned/      # cleaned_dataset.csv
+│   └── eda/          # features.csv
 └── assets/
     └── readme/
         ├── banner.svg
