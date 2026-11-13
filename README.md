@@ -90,9 +90,9 @@ flowchart TD
     A["Crawl 7 bảng CSV OULAD<br/>từ UCI"] --> B["%%sql + DuckDB<br/>đọc thẳng CSV"]
     B --> C["module_cutoff · assess_due · vle_agg · assess_agg"]
     C --> D["Bảng df_raw<br/>Intergrated_data.csv"]
-    D --> E["Làm sạch<br/>data dictionary · rò rỉ dữ liệu + missing (SQL) · duplicate · chuẩn hoá"]
-    E --> F["EDA<br/>đơn biến · song biến · đa biến · boxplot"]
-    F --> G["Xử lý outlier (log + chặn P99)<br/>→ Feature engineering 5 biến mới + VIF"]
+    D --> E["Làm sạch<br/>data dictionary · rò rỉ dữ liệu + missing (SQL) · duplicate · chuẩn hoá<br/>boxplot + xử lý outlier (log + chặn P99)"]
+    E --> F["EDA<br/>đơn biến · song biến · đa biến"]
+    F --> G["Feature engineering<br/>5 biến mới + VIF"]
     G --> H["Chia ngẫu nhiên phân tầng<br/>Train 70% · Validation 15% · Test 15%"]
     H --> I["Logistic Regression<br/>class_weight = balanced"]
     H --> J["Random Forest<br/>class_weight = balanced"]
@@ -112,8 +112,8 @@ flowchart TD
 | :---: | --- | --- |
 | **01** | Business Understanding | Bối cảnh, câu hỏi cốt lõi, định nghĩa target và mốc dự đoán. |
 | **02** | Thu thập dữ liệu | Nguồn dữ liệu, crawl 7 bảng CSV từ UCI, tích hợp bằng magic `%%sql` (DuckDB) thành một bảng phân tích (1 dòng = 1 sinh viên × 1 lớp học phần) và export CSV. |
-| **03** | Làm sạch &amp; tiền xử lý | Data dictionary, xử lý rò rỉ dữ liệu và missing theo nguyên nhân bằng `%%sql`, xử lý duplicate, chuẩn hoá kiểu dữ liệu. |
-| **04** | EDA &amp; Feature Engineering | Phân tích đơn biến, song biến, đa biến (Spearman), boxplot, xử lý outlier bằng log và chặn P99 (làm sạch lần 2), tạo 5 biến mới + VIF. |
+| **03** | Làm sạch &amp; tiền xử lý | Data dictionary, xử lý rò rỉ dữ liệu và missing theo nguyên nhân bằng `%%sql`, xử lý duplicate, chuẩn hoá kiểu dữ liệu, boxplot và xử lý outlier bằng log và chặn P99. |
+| **04** | EDA &amp; Feature Engineering | Phân tích đơn biến, song biến, đa biến (Spearman), tạo 5 biến mới + VIF. |
 | **05** | Mô hình &amp; đánh giá | Chia train/validation/test 70/15/15, pipeline `ColumnTransformer`, baseline Logistic Regression và Random Forest, tinh chỉnh siêu tham số trên validation, chọn ngưỡng dự đoán. |
 
 **Train:** 17,653 dòng (70%) · **Validation:** 3,783 dòng (15%) · **Test:** 3,783 dòng (15%) · at_risk 39.0% ở cả ba tập · **Seed:** `42`
