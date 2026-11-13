@@ -90,7 +90,7 @@ flowchart TD
     A["Crawl 7 bảng CSV OULAD<br/>từ UCI"] --> B["%%sql + DuckDB<br/>đọc thẳng CSV"]
     B --> C["module_cutoff · assess_due · vle_agg · assess_agg"]
     C --> D["Bảng df_raw<br/>Intergrated_data.csv"]
-    D --> E["Làm sạch<br/>data dictionary · missing · duplicate · chuẩn hoá"]
+    D --> E["Làm sạch<br/>data dictionary · rò rỉ dữ liệu + missing (SQL) · duplicate · chuẩn hoá"]
     E --> F["EDA<br/>đơn biến · song biến · đa biến · boxplot"]
     F --> G["Feature engineering 7 biến mới<br/>+ chặn outlier P99"]
     G --> H["Temporal split<br/>Train 2013B–2014B · Test 2014J"]
@@ -111,7 +111,7 @@ flowchart TD
 | :---: | --- | --- |
 | **01** | Business Understanding | Bối cảnh, câu hỏi cốt lõi, định nghĩa target và mốc dự đoán. |
 | **02** | Thu thập dữ liệu | Nguồn dữ liệu, crawl 7 bảng CSV từ UCI, tích hợp bằng magic `%%sql` (DuckDB) thành một bảng phân tích (1 dòng = 1 sinh viên × 1 lớp học phần) và export CSV. |
-| **03** | Làm sạch &amp; tiền xử lý | Data dictionary, xử lý missing theo nguyên nhân, xử lý duplicate, chuẩn hoá kiểu dữ liệu. |
+| **03** | Làm sạch &amp; tiền xử lý | Data dictionary, xử lý rò rỉ dữ liệu và missing theo nguyên nhân bằng `%%sql`, xử lý duplicate, chuẩn hoá kiểu dữ liệu. |
 | **04** | EDA &amp; Feature Engineering | Phân tích đơn biến, song biến, đa biến (Spearman), boxplot, tạo 7 biến mới + VIF, chặn outlier P99 (làm sạch lần 2). |
 | **05** | Mô hình &amp; đánh giá | Chia theo thời gian, pipeline `ColumnTransformer`, so sánh Logistic Regression và Random Forest. |
 
@@ -121,7 +121,7 @@ flowchart TD
 
 - **Cutoff động theo từng lớp.** Mốc 40% rơi vào ngày 68 ở module EEE nhưng ngày 222 ở GGG. Một ngày cố định sẽ không công bằng giữa các môn.
 - **`LEFT JOIN` để giữ sinh viên không hoạt động.** Sinh viên không click hay nộp bài nào trước cutoff là nhóm nguy cơ cao nhất. `INNER JOIN` sẽ xoá họ khỏi mẫu.
-- **Lọc phạm vi.** Loại sinh viên đã rút trước cutoff (đã rút thì không còn can thiệp được, giữ lại sẽ tạo nhãn hiển nhiên) và sinh viên đăng ký sau cutoff.
+- **Xử lý rò rỉ dữ liệu ở bước làm sạch (SQL).** Bỏ `date_unregistration`, loại sinh viên đã rút trước cutoff (đã rút thì không còn can thiệp được, giữ lại sẽ tạo nhãn hiển nhiên) và sinh viên đăng ký sau cutoff.
 - **Missing có nghĩa.** `avg_score` chỉ thiếu khi chưa nộp bài. Dữ liệu được tách thành 2 cờ: `dropout_no_activity` (at_risk 99.3%) và `active_but_no_submission` (53.7%).
 - **Chia theo thời gian thay vì ngẫu nhiên.** Mô hình học từ các kỳ trước và được kiểm tra trên kỳ sau, đúng như khi triển khai thực tế.
 
@@ -192,7 +192,7 @@ Dữ liệu của từng giai đoạn đã có sẵn trong thư mục [`data/`](
 | Thư mục | Giai đoạn | Nội dung |
 | --- | --- | --- |
 | [`data/raw/`](data/raw) | Dữ liệu gốc | 7 bảng CSV OULAD + `OULAD.names`. `studentVle.csv` (433 MB) vượt giới hạn 100 MB của GitHub nên được nén thành `studentVle.csv.gz` (41 MB); pandas đọc trực tiếp được, hoặc giải nén bằng `gzip -dk data/raw/studentVle.csv.gz`. |
-| [`data/integrated/`](data/integrated) | Sau tích hợp SQL | `Intergrated_data.csv` (25,219 × 17), export từ bảng SQL `df_raw`; `data_dictionary.csv`. |
+| [`data/integrated/`](data/integrated) | Sau tích hợp SQL | `Intergrated_data.csv` (32,593 × 18), export từ bảng SQL `df_raw`; `data_dictionary.csv`. |
 | [`data/cleaned/`](data/cleaned) | Sau làm sạch | `cleaned_dataset.csv`, output phần 3 của notebook. |
 | [`data/eda/`](data/eda) | Sau EDA & feature engineering | `features.csv`, output phần 4 của notebook. |
 

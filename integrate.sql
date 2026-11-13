@@ -52,11 +52,13 @@ WHERE s.date_submitted < c.cutoff_day
 GROUP BY ALL;
 
 -- 5. Bảng phân tích cuối: LEFT JOIN để giữ cả SV không hoạt động.
---    Bỏ biến nhân khẩu học (công bằng) và date_unregistration (thông tin tương lai).
---    Loại SV đã rút trước cutoff hoặc đăng ký sau cutoff.
+--    Bỏ biến nhân khẩu học (công bằng). Giữ date_unregistration và toàn bộ SV:
+--    xử lý rò rỉ dữ liệu (bỏ date_unregistration, loại SV rút trước cutoff / đăng ký
+--    sau cutoff) được làm ở bước làm sạch, phần 3.2 của notebook.
 CREATE OR REPLACE TABLE df_raw AS
 SELECT si.code_module, si.code_presentation, si.id_student,
-       si.num_of_prev_attempts, si.studied_credits, sr.date_registration, c.cutoff_day,
+       si.num_of_prev_attempts, si.studied_credits, sr.date_registration,
+       sr.date_unregistration, c.cutoff_day,
        COALESCE(v.total_clicks, 0)        AS total_clicks,
        COALESCE(v.active_days, 0)         AS active_days,
        COALESCE(v.n_resources, 0)         AS n_resources,
@@ -74,6 +76,4 @@ JOIN studentRegistration sr USING (code_module, code_presentation, id_student)
 JOIN module_cutoff c        USING (code_module, code_presentation)
 LEFT JOIN vle_agg v         USING (code_module, code_presentation, id_student)
 LEFT JOIN assess_agg a      USING (code_module, code_presentation, id_student)
-WHERE (sr.date_unregistration IS NULL OR sr.date_unregistration > c.cutoff_day)
-  AND (sr.date_registration   IS NULL OR sr.date_registration  <= c.cutoff_day)
 ORDER BY si.code_module, si.code_presentation, si.id_student;

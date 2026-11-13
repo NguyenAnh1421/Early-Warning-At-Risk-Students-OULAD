@@ -1,18 +1,19 @@
 column,dtype,n_missing,n_unique,example,meaning
 code_module,str,0,7,AAA,Mã môn học
 code_presentation,str,0,4,2013J,Kỳ học (năm + B=tháng 2 / J=tháng 10)
-id_student,int64,0,23153,11391,Mã sinh viên
+id_student,int64,0,28785,11391,Mã sinh viên
 num_of_prev_attempts,int64,0,7,0,Số lần đã học môn này trước đó
-studied_credits,int64,0,50,240,Tổng số tín chỉ đang học
-date_registration,float64,7,306,-159.0,Ngày đăng ký so với ngày khai giảng
+studied_credits,int64,0,61,240,Tổng số tín chỉ đang học
+date_registration,float64,45,332,-159.0,Ngày đăng ký so với ngày khai giảng
+date_unregistration,float64,22521,416,,"Ngày huỷ đăng ký (thông tin tương lai, loại ở 3.2)"
 cutoff_day,int64,0,16,117,Ngày cảnh báo (tích luỹ >= 40% trọng số)
-total_clicks,int64,0,3293,628,Tổng click VLE trước cutoff
+total_clicks,int64,0,3308,628,Tổng click VLE trước cutoff
 active_days,int64,0,162,26,Số ngày có hoạt động VLE trước cutoff
-n_resources,int64,0,212,39,Số tài nguyên VLE khác nhau đã truy cập
-clicks_before_start,int64,0,822,98,Click VLE trước ngày khai giảng
+n_resources,int64,0,213,39,Số tài nguyên VLE khác nhau đã truy cập
+clicks_before_start,int64,0,843,98,Click VLE trước ngày khai giảng
 n_assess_due,int64,0,5,2,Số bài kiểm tra đến hạn trước cutoff
 n_submitted,int64,0,7,2,Số bài đã nộp trước cutoff
-avg_score,float64,3730,478,81.5,Điểm trung bình các bài đã nộp
+avg_score,float64,9161,504,81.5,Điểm trung bình các bài đã nộp
 n_late,int64,0,7,0,Số bài nộp trễ
 final_result,str,0,4,Pass,Kết quả cuối kỳ (chỉ dùng để tạo target)
 at_risk,int64,0,2,0,"Target: 1 = Fail/Withdrawn, 0 = Pass/Distinction"
