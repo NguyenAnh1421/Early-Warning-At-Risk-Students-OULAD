@@ -11,7 +11,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&amp;logo=python&amp;logoColor=white" alt="Python 3.13">
   <img src="https://img.shields.io/badge/Jupyter-Notebook-F37626?style=for-the-badge&amp;logo=jupyter&amp;logoColor=white" alt="Jupyter Notebook">
-  <img src="https://img.shields.io/badge/SQLite-Integration-003B57?style=for-the-badge&amp;logo=sqlite&amp;logoColor=white" alt="SQLite">
+  <img src="https://img.shields.io/badge/DuckDB-SQL-FFF000?style=for-the-badge&amp;logo=duckdb&amp;logoColor=black" alt="DuckDB SQL">
   <img src="https://img.shields.io/badge/scikit--learn-Models-F7931E?style=for-the-badge&amp;logo=scikitlearn&amp;logoColor=white" alt="scikit-learn">
 </p>
 
@@ -44,7 +44,7 @@ Hai câu hỏi cốt lõi:
 
 | Lượt ghi danh sau lọc | Lớp học phần | Bảng gốc | Đặc trưng đưa vào mô hình | Mô hình |
 | :---: | :---: | :---: | :---: | :---: |
-| **25,219** | **22** | **7** | **17 số + 2 phân loại** | **2** |
+| **25,219** | **22** | **7** | **15 số + 2 phân loại** | **2** |
 
 ## 🗺️ Dữ liệu
 
@@ -73,11 +73,13 @@ Dự án dùng [Open University Learning Analytics Dataset (OULAD)](https://arch
 
 | Nhóm | Biến | Nguồn |
 | --- | --- | --- |
-| Lịch sử học tập | `studied_credits`, `is_repeater`, `date_registration` | `studentInfo`, `studentRegistration` |
+| Lịch sử học tập | `is_repeater` | `studentInfo` |
 | Hành vi VLE trước cutoff | `log_total_clicks`, `active_days`, `n_resources`, `log_clicks_before_start`, `clicks_per_active_day` | `studentVle` |
 | Đánh giá trước cutoff | `n_assess_due`, `n_submitted`, `avg_score`, `n_late`, `n_missed`, `submission_rate`, `late_rate` | `assessments`, `studentAssessment` |
 | Cờ hành vi | `dropout_no_activity`, `active_but_no_submission` | Tạo ở bước xử lý missing |
 | Ngữ cảnh lớp | `code_module`, `pres_semester` | One-hot encoding |
+
+`studied_credits` và `date_registration` có trong bảng tích hợp nhưng bị loại khỏi mô hình vì EDA cho thấy chúng không phân biệt được nguy cơ.
 
 Các biến nhân khẩu học (giới tính, độ tuổi, vùng, IMD, học vấn, khuyết tật) **được loại có chủ đích** vì lý do công bằng. `date_unregistration` cũng bị loại vì là thông tin xảy ra sau mốc dự đoán.
 
@@ -85,12 +87,12 @@ Các biến nhân khẩu học (giới tính, độ tuổi, vùng, IMD, học v�
 
 ```mermaid
 flowchart TD
-    A["7 bảng CSV OULAD"] --> B["SQLite<br/>oulad.db"]
-    B --> C["integrate.sql<br/>module_cutoff · vle_agg · due_agg · assess_agg"]
-    C --> D["View df_raw_v<br/>Intergrated_data.csv"]
-    D --> E["Làm sạch<br/>dtype · missing 3 nhánh · capping P99"]
-    E --> F["EDA<br/>đơn biến · hai biến · Spearman · VIF"]
-    F --> G["Feature engineering<br/>7 biến mới"]
+    A["Crawl 7 bảng CSV OULAD<br/>từ UCI"] --> B["%%sql + DuckDB<br/>đọc thẳng CSV"]
+    B --> C["module_cutoff · assess_due · vle_agg · assess_agg"]
+    C --> D["Bảng df_raw<br/>Intergrated_data.csv"]
+    D --> E["Làm sạch<br/>data dictionary · missing · duplicate · chuẩn hoá"]
+    E --> F["EDA<br/>đơn biến · song biến · đa biến · boxplot"]
+    F --> G["Feature engineering 7 biến mới<br/>+ chặn outlier P99"]
     G --> H["Temporal split<br/>Train 2013B–2014B · Test 2014J"]
     H --> I["Logistic Regression<br/>class_weight = balanced"]
     H --> J["Random Forest<br/>class_weight = balanced"]
@@ -108,9 +110,9 @@ flowchart TD
 | Phần | Chương | Nội dung |
 | :---: | --- | --- |
 | **01** | Business Understanding | Bối cảnh, câu hỏi cốt lõi, định nghĩa target và mốc dự đoán. |
-| **02** | Thu thập dữ liệu | Nạp 7 bảng gốc, tích hợp bằng SQL thành một bảng phân tích (1 dòng = 1 sinh viên × 1 lớp học phần). |
-| **03** | Làm sạch &amp; tiền xử lý | Chuẩn hoá kiểu dữ liệu, xử lý missing theo nguyên nhân, phát hiện outlier bằng IQR và capping P99 cho các biến click. |
-| **04** | EDA &amp; Feature Engineering | Phân tích hai biến theo `at_risk`, tương quan Spearman, kiểm tra đa cộng tuyến bằng VIF, tạo 7 biến mới. |
+| **02** | Thu thập dữ liệu | Nguồn dữ liệu, crawl 7 bảng CSV từ UCI, tích hợp bằng magic `%%sql` (DuckDB) thành một bảng phân tích (1 dòng = 1 sinh viên × 1 lớp học phần) và export CSV. |
+| **03** | Làm sạch &amp; tiền xử lý | Data dictionary, xử lý missing theo nguyên nhân, xử lý duplicate, chuẩn hoá kiểu dữ liệu. |
+| **04** | EDA &amp; Feature Engineering | Phân tích đơn biến, song biến, đa biến (Spearman), boxplot, tạo 7 biến mới + VIF, chặn outlier P99 (làm sạch lần 2). |
 | **05** | Mô hình &amp; đánh giá | Chia theo thời gian, pipeline `ColumnTransformer`, so sánh Logistic Regression và Random Forest. |
 
 **Train:** 16,915 dòng (3 kỳ đầu, at_risk 41.3%) · **Test:** 8,304 dòng (kỳ 2014J, at_risk 34.3%) · **Seed:** `42`
@@ -120,7 +122,7 @@ flowchart TD
 - **Cutoff động theo từng lớp.** Mốc 40% rơi vào ngày 68 ở module EEE nhưng ngày 222 ở GGG. Một ngày cố định sẽ không công bằng giữa các môn.
 - **`LEFT JOIN` để giữ sinh viên không hoạt động.** Sinh viên không click hay nộp bài nào trước cutoff là nhóm nguy cơ cao nhất. `INNER JOIN` sẽ xoá họ khỏi mẫu.
 - **Lọc phạm vi.** Loại sinh viên đã rút trước cutoff (đã rút thì không còn can thiệp được, giữ lại sẽ tạo nhãn hiển nhiên) và sinh viên đăng ký sau cutoff.
-- **Missing có nghĩa.** `avg_score` chỉ thiếu khi chưa nộp bài. Dữ liệu được tách thành 3 cờ: `dropout_no_activity` (at_risk 99.3%), `active_but_no_submission` (53.7%) và `pending_grade`.
+- **Missing có nghĩa.** `avg_score` chỉ thiếu khi chưa nộp bài. Dữ liệu được tách thành 2 cờ: `dropout_no_activity` (at_risk 99.3%) và `active_but_no_submission` (53.7%).
 - **Chia theo thời gian thay vì ngẫu nhiên.** Mô hình học từ các kỳ trước và được kiểm tra trên kỳ sau, đúng như khi triển khai thực tế.
 
 <a id="results"></a>
@@ -131,17 +133,17 @@ flowchart TD
 
 | Mô hình | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| **Logistic Regression** | **79.25%** | **0.7225** | 0.6410 | **0.6793** | **0.8445** | **0.7896** |
-| Random Forest | 77.16% | 0.6597 | **0.6891** | 0.6741 | 0.8398 | 0.7841 |
+| **Logistic Regression** | **79.25%** | **0.7230** | 0.6400 | **0.6790** | **0.8443** | **0.7897** |
+| Random Forest | 77.10% | 0.6591 | **0.6874** | 0.6730 | 0.8392 | 0.7843 |
 
 Precision, Recall và F1 tính cho lớp **`at_risk = 1`**. PR-AUC của mô hình nền (đoán ngẫu nhiên) bằng tỷ lệ nguy cơ trên tập test, tức **0.343**.
 
 | Mô hình | TN | FP | FN | TP |
 | --- | ---: | ---: | ---: | ---: |
-| Logistic Regression | 4,756 | 701 | 1,022 | 1,825 |
-| Random Forest | 4,445 | 1,012 | **885** | **1,962** |
+| Logistic Regression | 4,759 | 698 | 1,025 | 1,822 |
+| Random Forest | 4,445 | 1,012 | **890** | **1,957** |
 
-Hai mô hình có ROC-AUC và PR-AUC gần như ngang nhau. Random Forest bỏ sót ít sinh viên nguy cơ hơn (FN 885 so với 1,022), nhưng đổi lại có nhiều cảnh báo nhầm hơn. Nhóm chọn **Random Forest** làm mô hình chính vì Recall cao hơn, và dùng **Logistic Regression** để kiểm tra chéo và diễn giải qua hệ số. Muốn bắt được phần lớn sinh viên nguy cơ (Recall ≈ 0.75) thì có thể hạ ngưỡng xuống khoảng 0.4.
+Hai mô hình có ROC-AUC và PR-AUC gần như ngang nhau. Random Forest bỏ sót ít sinh viên nguy cơ hơn (FN 890 so với 1,025), nhưng đổi lại có nhiều cảnh báo nhầm hơn. Nhóm chọn **Random Forest** làm mô hình chính vì Recall cao hơn, và dùng **Logistic Regression** để kiểm tra chéo và diễn giải qua hệ số. Hạ ngưỡng của Random Forest xuống 0.4 cho Recall 0.79 (Precision 0.59).
 
 ![Confusion matrix, ROC và Precision-Recall của Logistic Regression và Random Forest trên kỳ 2014J](assets/readme/model-evaluation.png)
 
@@ -190,19 +192,11 @@ Dữ liệu của từng giai đoạn đã có sẵn trong thư mục [`data/`](
 | Thư mục | Giai đoạn | Nội dung |
 | --- | --- | --- |
 | [`data/raw/`](data/raw) | Dữ liệu gốc | 7 bảng CSV OULAD + `OULAD.names`. `studentVle.csv` (433 MB) vượt giới hạn 100 MB của GitHub nên được nén thành `studentVle.csv.gz` (41 MB); pandas đọc trực tiếp được, hoặc giải nén bằng `gzip -dk data/raw/studentVle.csv.gz`. |
-| [`data/integrated/`](data/integrated) | Sau tích hợp SQL | `Intergrated_data.csv` (25,219 × 17), export từ view `df_raw_v`. |
+| [`data/integrated/`](data/integrated) | Sau tích hợp SQL | `Intergrated_data.csv` (25,219 × 17), export từ bảng SQL `df_raw`; `data_dictionary.csv`. |
 | [`data/cleaned/`](data/cleaned) | Sau làm sạch | `cleaned_dataset.csv`, output phần 3 của notebook. |
 | [`data/eda/`](data/eda) | Sau EDA & feature engineering | `features.csv`, output phần 4 của notebook. |
 
-Notebook đọc/ghi các file này ở **thư mục gốc repo**, nên trước khi chạy hãy copy `data/integrated/Intergrated_data.csv` ra thư mục gốc.
-
-Nếu muốn chạy lại toàn bộ pipeline từ dữ liệu gốc:
-
-1. Giải nén `data/raw/studentVle.csv.gz`, rồi trỏ đường dẫn `PRJ` ở đầu notebook tới `data/raw` (mặc định là `../prj/`).
-2. Chạy phần 2 của notebook để nạp các bảng vào `oulad.db`.
-3. Chạy [`integrate.sql`](integrate.sql) trên `oulad.db` và export view `df_raw_v` ra `Intergrated_data.csv`.
-
-`oulad.db` (~330 MB) được sinh lại từ CSV gốc nên không đưa lên GitHub.
+Notebook đọc/ghi trực tiếp các file trong `data/`. Phần 2.2 tự tải file zip OULAD từ UCI nếu `data/raw/` chưa đủ 7 file CSV (`studentVle.csv` không có trong repo nên lần chạy đầu sẽ tải khoảng 47 MB). DuckDB đọc thẳng CSV nên không cần tạo database.
 
 ### 4. Chạy notebook
 
@@ -210,7 +204,7 @@ Nếu muốn chạy lại toàn bộ pipeline từ dữ liệu gốc:
 .\.venv\Scripts\python.exe -m jupyterlab G6_FINAL.ipynb
 ```
 
-Chọn kernel `.venv`, restart rồi chạy từ trên xuống. Notebook sẽ tự sinh `cleaned_dataset.csv` và `features.csv`.
+Chọn kernel `.venv`, restart rồi chạy từ trên xuống. Notebook sẽ tự sinh `Intergrated_data.csv`, `data_dictionary.csv`, `cleaned_dataset.csv` và `features.csv`.
 
 ## 📂 Cấu trúc repo
 
@@ -223,7 +217,7 @@ Chọn kernel `.venv`, restart rồi chạy từ trên xuống. Notebook sẽ t�
 ├── .gitignore
 ├── data/
 │   ├── raw/          # 7 bảng OULAD gốc (studentVle nén .gz)
-│   ├── integrated/   # Intergrated_data.csv
+│   ├── integrated/   # Intergrated_data.csv, data_dictionary.csv
 │   ├── cleaned/      # cleaned_dataset.csv
 │   └── eda/          # features.csv
 └── assets/
@@ -238,8 +232,8 @@ Chọn kernel `.venv`, restart rồi chạy từ trên xuống. Notebook sẽ t�
 | File | Vai trò |
 | --- | --- |
 | [G6_FINAL.ipynb](G6_FINAL.ipynb) | Báo cáo cuối kỳ đầy đủ 5 phần, đã lưu sẵn output. |
-| [integrate.sql](integrate.sql) | Pipeline SQL tích hợp 7 bảng OULAD thành view `df_raw_v`, chỉ dùng dữ liệu trước cutoff. |
-| [requirements.txt](requirements.txt) | NumPy, pandas, Matplotlib, seaborn, SciPy, scikit-learn. |
+| [integrate.sql](integrate.sql) | Bản SQL độc lập của phần 2.3 (DuckDB), tích hợp các bảng OULAD thành `df_raw`, chỉ dùng dữ liệu trước cutoff. |
+| [requirements.txt](requirements.txt) | NumPy, pandas, Matplotlib, seaborn, scikit-learn, DuckDB, jupysql. |
 
 ## 🔭 Hạn chế &amp; hướng phát triển
 
