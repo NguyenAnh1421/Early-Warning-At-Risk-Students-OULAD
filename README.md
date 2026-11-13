@@ -130,23 +130,23 @@ flowchart TD
 
 ## 📊 Kết quả
 
-### Đánh giá trên tập test (ngưỡng 0.5)
+### Đánh giá trên tập test (ngưỡng 0.3)
 
 | Mô hình | Phiên bản | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Logistic Regression | Baseline | 78.48% | 0.7208 | 0.7315 | 0.7261 | 0.8569 | 0.8240 |
-| Logistic Regression | Tinh chỉnh (`C = 10`) | 78.38% | 0.7194 | 0.7302 | 0.7248 | 0.8570 | 0.8240 |
-| Random Forest | Baseline | 79.06% | 0.7434 | 0.7071 | 0.7248 | 0.8591 | 0.8255 |
-| **Random Forest** | **Tinh chỉnh (`min_samples_leaf = 5`, 300 cây)** | **79.36%** | 0.7348 | **0.7363** | **0.7355** | **0.8652** | **0.8362** |
+| Logistic Regression | Baseline | 69.47% | 0.5699 | 0.8847 | 0.6932 | 0.8569 | 0.8240 |
+| Logistic Regression | Tinh chỉnh (`C = 10`) | 69.63% | 0.5714 | **0.8841** | 0.6942 | 0.8570 | 0.8240 |
+| Random Forest | Baseline | 71.35% | 0.5901 | 0.8678 | 0.7025 | 0.8591 | 0.8255 |
+| **Random Forest** | **Tinh chỉnh (`min_samples_leaf = 1`, 300 cây)** | **71.79%** | **0.5940** | 0.8739 | **0.7073** | **0.8610** | **0.8297** |
 
-Precision, Recall và F1 tính cho lớp **`at_risk = 1`**. PR-AUC của mô hình nền (đoán ngẫu nhiên) bằng tỷ lệ nguy cơ trên tập test, tức **0.390**. Baseline dùng siêu tham số mặc định của scikit-learn; bộ tinh chỉnh được chọn theo F1 trên tập validation.
+Một sinh viên được dự đoán "nguy cơ" khi xác suất ≥ 0.3. Precision, Recall và F1 tính cho lớp **`at_risk = 1`**. PR-AUC của mô hình nền (đoán ngẫu nhiên) bằng tỷ lệ nguy cơ trên tập test, tức **0.390**. Baseline dùng siêu tham số mặc định của scikit-learn; bộ tinh chỉnh được chọn theo F1 ở ngưỡng 0.3 trên tập validation.
 
 | Mô hình (đã tinh chỉnh) | TN | FP | FN | TP |
 | --- | ---: | ---: | ---: | ---: |
-| Logistic Regression | 1,888 | 420 | 398 | 1,077 |
-| Random Forest | 1,916 | 392 | **389** | **1,086** |
+| Logistic Regression | 1,330 | 978 | 171 | 1,304 |
+| Random Forest | **1,427** | **881** | 186 | 1,289 |
 
-Tinh chỉnh gần như không thay đổi Logistic Regression, nhưng cải thiện rõ Random Forest (F1 0.725 → 0.736, FN 432 → 389). Sau tinh chỉnh, Random Forest tốt hơn Logistic Regression ở mọi chỉ số chính nên được chọn làm mô hình cuối; Logistic Regression dùng để kiểm tra chéo và diễn giải qua hệ số. Hạ ngưỡng của Random Forest xuống 0.4 cho Recall 0.79 trên validation và 0.83 trên test (Precision khoảng 0.65).
+Ngưỡng 0.3 ưu tiên không bỏ sót sinh viên nguy cơ: so với ngưỡng 0.5, Recall tăng lên khoảng 0.87 và FN giảm từ khoảng 400 xuống dưới 200, đổi lại Precision giảm còn khoảng 0.59. Tinh chỉnh gần như không thay đổi Logistic Regression và chỉ cải thiện nhẹ Random Forest (F1 0.703 → 0.707, FN 195 → 186). Random Forest đã tinh chỉnh tốt hơn Logistic Regression ở F1, Precision, ROC-AUC, PR-AUC và ít cảnh báo nhầm hơn (881 so với 978), Recall chỉ thấp hơn khoảng 0.01, nên được chọn làm mô hình cuối. Nếu nguồn lực tư vấn hạn chế, nâng ngưỡng lên 0.4 cho Recall 0.80 và Precision 0.67 trên test.
 
 ![Confusion matrix, ROC và Precision-Recall của Logistic Regression và Random Forest đã tinh chỉnh trên tập test](assets/readme/model-evaluation.png)
 
