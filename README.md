@@ -92,7 +92,7 @@ flowchart TD
     C --> D["Bảng df_raw<br/>Intergrated_data.csv"]
     D --> E["Làm sạch<br/>data dictionary · rò rỉ dữ liệu + missing (SQL) · duplicate · chuẩn hoá"]
     E --> F["EDA<br/>đơn biến · song biến · đa biến · boxplot"]
-    F --> G["Feature engineering 7 biến mới<br/>+ chặn outlier P99"]
+    F --> G["Xử lý outlier (log + chặn P99)<br/>→ Feature engineering 5 biến mới + VIF"]
     G --> H["Temporal split<br/>Train 2013B–2014B · Test 2014J"]
     H --> I["Logistic Regression<br/>class_weight = balanced"]
     H --> J["Random Forest<br/>class_weight = balanced"]
@@ -112,7 +112,7 @@ flowchart TD
 | **01** | Business Understanding | Bối cảnh, câu hỏi cốt lõi, định nghĩa target và mốc dự đoán. |
 | **02** | Thu thập dữ liệu | Nguồn dữ liệu, crawl 7 bảng CSV từ UCI, tích hợp bằng magic `%%sql` (DuckDB) thành một bảng phân tích (1 dòng = 1 sinh viên × 1 lớp học phần) và export CSV. |
 | **03** | Làm sạch &amp; tiền xử lý | Data dictionary, xử lý rò rỉ dữ liệu và missing theo nguyên nhân bằng `%%sql`, xử lý duplicate, chuẩn hoá kiểu dữ liệu. |
-| **04** | EDA &amp; Feature Engineering | Phân tích đơn biến, song biến, đa biến (Spearman), boxplot, tạo 7 biến mới + VIF, chặn outlier P99 (làm sạch lần 2). |
+| **04** | EDA &amp; Feature Engineering | Phân tích đơn biến, song biến, đa biến (Spearman), boxplot, xử lý outlier bằng log và chặn P99 (làm sạch lần 2), tạo 5 biến mới + VIF. |
 | **05** | Mô hình &amp; đánh giá | Chia theo thời gian, pipeline `ColumnTransformer`, so sánh Logistic Regression và Random Forest. |
 
 **Train:** 16,915 dòng (3 kỳ đầu, at_risk 41.3%) · **Test:** 8,304 dòng (kỳ 2014J, at_risk 34.3%) · **Seed:** `42`
@@ -133,17 +133,17 @@ flowchart TD
 
 | Mô hình | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| **Logistic Regression** | **79.25%** | **0.7230** | 0.6400 | **0.6790** | **0.8443** | **0.7897** |
-| Random Forest | 77.10% | 0.6591 | **0.6874** | 0.6730 | 0.8392 | 0.7843 |
+| **Logistic Regression** | **79.35%** | **0.7246** | 0.6414 | **0.6805** | **0.8442** | **0.7895** |
+| Random Forest | 77.05% | 0.6578 | **0.6888** | 0.6730 | 0.8392 | 0.7847 |
 
 Precision, Recall và F1 tính cho lớp **`at_risk = 1`**. PR-AUC của mô hình nền (đoán ngẫu nhiên) bằng tỷ lệ nguy cơ trên tập test, tức **0.343**.
 
 | Mô hình | TN | FP | FN | TP |
 | --- | ---: | ---: | ---: | ---: |
-| Logistic Regression | 4,759 | 698 | 1,025 | 1,822 |
-| Random Forest | 4,445 | 1,012 | **890** | **1,957** |
+| Logistic Regression | 4,763 | 694 | 1,021 | 1,826 |
+| Random Forest | 4,437 | 1,020 | **886** | **1,961** |
 
-Hai mô hình có ROC-AUC và PR-AUC gần như ngang nhau. Random Forest bỏ sót ít sinh viên nguy cơ hơn (FN 890 so với 1,025), nhưng đổi lại có nhiều cảnh báo nhầm hơn. Nhóm chọn **Random Forest** làm mô hình chính vì Recall cao hơn, và dùng **Logistic Regression** để kiểm tra chéo và diễn giải qua hệ số. Hạ ngưỡng của Random Forest xuống 0.4 cho Recall 0.79 (Precision 0.59).
+Hai mô hình có ROC-AUC và PR-AUC gần như ngang nhau. Random Forest bỏ sót ít sinh viên nguy cơ hơn (FN 886 so với 1,021), nhưng đổi lại có nhiều cảnh báo nhầm hơn. Nhóm chọn **Random Forest** làm mô hình chính vì Recall cao hơn, và dùng **Logistic Regression** để kiểm tra chéo và diễn giải qua hệ số. Hạ ngưỡng của Random Forest xuống 0.4 cho Recall 0.79 (Precision 0.59).
 
 ![Confusion matrix, ROC và Precision-Recall của Logistic Regression và Random Forest trên kỳ 2014J](assets/readme/model-evaluation.png)
 
