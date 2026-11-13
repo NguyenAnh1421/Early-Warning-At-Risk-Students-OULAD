@@ -93,11 +93,12 @@ flowchart TD
     D --> E["Làm sạch<br/>data dictionary · rò rỉ dữ liệu + missing (SQL) · duplicate · chuẩn hoá"]
     E --> F["EDA<br/>đơn biến · song biến · đa biến · boxplot"]
     F --> G["Xử lý outlier (log + chặn P99)<br/>→ Feature engineering 5 biến mới + VIF"]
-    G --> H["Temporal split<br/>Train 2013B–2014B · Test 2014J"]
+    G --> H["Chia ngẫu nhiên phân tầng<br/>Train 70% · Validation 15% · Test 15%"]
     H --> I["Logistic Regression<br/>class_weight = balanced"]
     H --> J["Random Forest<br/>class_weight = balanced"]
-    I --> K["Đánh giá trên 2014J<br/>Accuracy · Precision · Recall · F1 · ROC-AUC · PR-AUC"]
-    J --> K
+    I --> T["Fine-tuning trên validation<br/>chọn theo F1"]
+    J --> T
+    T --> K["Đánh giá trên test<br/>Accuracy · Precision · Recall · F1 · ROC-AUC · PR-AUC"]
 
     classDef source fill:#15243b,stroke:#6ee7c9,color:#edf8ff;
     classDef analysis fill:#241d43,stroke:#b69af6,color:#f5f0ff;
@@ -113,9 +114,9 @@ flowchart TD
 | **02** | Thu thập dữ liệu | Nguồn dữ liệu, crawl 7 bảng CSV từ UCI, tích hợp bằng magic `%%sql` (DuckDB) thành một bảng phân tích (1 dòng = 1 sinh viên × 1 lớp học phần) và export CSV. |
 | **03** | Làm sạch &amp; tiền xử lý | Data dictionary, xử lý rò rỉ dữ liệu và missing theo nguyên nhân bằng `%%sql`, xử lý duplicate, chuẩn hoá kiểu dữ liệu. |
 | **04** | EDA &amp; Feature Engineering | Phân tích đơn biến, song biến, đa biến (Spearman), boxplot, xử lý outlier bằng log và chặn P99 (làm sạch lần 2), tạo 5 biến mới + VIF. |
-| **05** | Mô hình &amp; đánh giá | Chia theo thời gian, pipeline `ColumnTransformer`, so sánh Logistic Regression và Random Forest. |
+| **05** | Mô hình &amp; đánh giá | Chia train/validation/test 70/15/15, pipeline `ColumnTransformer`, baseline Logistic Regression và Random Forest, tinh chỉnh siêu tham số trên validation, chọn ngưỡng dự đoán. |
 
-**Train:** 16,915 dòng (3 kỳ đầu, at_risk 41.3%) · **Test:** 8,304 dòng (kỳ 2014J, at_risk 34.3%) · **Seed:** `42`
+**Train:** 17,653 dòng (70%) · **Validation:** 3,783 dòng (15%) · **Test:** 3,783 dòng (15%) · at_risk 39.0% ở cả ba tập · **Seed:** `42`
 
 ### Điểm đáng chú ý trong pipeline
 
@@ -123,29 +124,31 @@ flowchart TD
 - **`LEFT JOIN` để giữ sinh viên không hoạt động.** Sinh viên không click hay nộp bài nào trước cutoff là nhóm nguy cơ cao nhất. `INNER JOIN` sẽ xoá họ khỏi mẫu.
 - **Xử lý rò rỉ dữ liệu ở bước làm sạch (SQL).** Bỏ `date_unregistration`, loại sinh viên đã rút trước cutoff (đã rút thì không còn can thiệp được, giữ lại sẽ tạo nhãn hiển nhiên) và sinh viên đăng ký sau cutoff.
 - **Missing có nghĩa.** `avg_score` chỉ thiếu khi chưa nộp bài. Dữ liệu được tách thành 2 cờ: `dropout_no_activity` (at_risk 99.3%) và `active_but_no_submission` (53.7%).
-- **Chia theo thời gian thay vì ngẫu nhiên.** Mô hình học từ các kỳ trước và được kiểm tra trên kỳ sau, đúng như khi triển khai thực tế.
+- **Tách riêng tập validation.** Siêu tham số và ngưỡng dự đoán được chọn trên validation; tập test chỉ dùng để báo cáo kết quả cuối.
 
 <a id="results"></a>
 
 ## 📊 Kết quả
 
-### Đánh giá trên tập test 2014J (ngưỡng 0.5)
+### Đánh giá trên tập test (ngưỡng 0.5)
 
-| Mô hình | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| **Logistic Regression** | **79.35%** | **0.7246** | 0.6414 | **0.6805** | **0.8442** | **0.7895** |
-| Random Forest | 77.05% | 0.6578 | **0.6888** | 0.6730 | 0.8392 | 0.7847 |
+| Mô hình | Phiên bản | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Logistic Regression | Baseline | 78.48% | 0.7208 | 0.7315 | 0.7261 | 0.8569 | 0.8240 |
+| Logistic Regression | Tinh chỉnh (`C = 10`) | 78.38% | 0.7194 | 0.7302 | 0.7248 | 0.8570 | 0.8240 |
+| Random Forest | Baseline | 79.06% | 0.7434 | 0.7071 | 0.7248 | 0.8591 | 0.8255 |
+| **Random Forest** | **Tinh chỉnh (`min_samples_leaf = 5`, 300 cây)** | **79.36%** | 0.7348 | **0.7363** | **0.7355** | **0.8652** | **0.8362** |
 
-Precision, Recall và F1 tính cho lớp **`at_risk = 1`**. PR-AUC của mô hình nền (đoán ngẫu nhiên) bằng tỷ lệ nguy cơ trên tập test, tức **0.343**.
+Precision, Recall và F1 tính cho lớp **`at_risk = 1`**. PR-AUC của mô hình nền (đoán ngẫu nhiên) bằng tỷ lệ nguy cơ trên tập test, tức **0.390**. Baseline dùng siêu tham số mặc định của scikit-learn; bộ tinh chỉnh được chọn theo F1 trên tập validation.
 
-| Mô hình | TN | FP | FN | TP |
+| Mô hình (đã tinh chỉnh) | TN | FP | FN | TP |
 | --- | ---: | ---: | ---: | ---: |
-| Logistic Regression | 4,763 | 694 | 1,021 | 1,826 |
-| Random Forest | 4,437 | 1,020 | **886** | **1,961** |
+| Logistic Regression | 1,888 | 420 | 398 | 1,077 |
+| Random Forest | 1,916 | 392 | **389** | **1,086** |
 
-Hai mô hình có ROC-AUC và PR-AUC gần như ngang nhau. Random Forest bỏ sót ít sinh viên nguy cơ hơn (FN 886 so với 1,021), nhưng đổi lại có nhiều cảnh báo nhầm hơn. Nhóm chọn **Random Forest** làm mô hình chính vì Recall cao hơn, và dùng **Logistic Regression** để kiểm tra chéo và diễn giải qua hệ số. Hạ ngưỡng của Random Forest xuống 0.4 cho Recall 0.79 (Precision 0.59).
+Tinh chỉnh gần như không thay đổi Logistic Regression, nhưng cải thiện rõ Random Forest (F1 0.725 → 0.736, FN 432 → 389). Sau tinh chỉnh, Random Forest tốt hơn Logistic Regression ở mọi chỉ số chính nên được chọn làm mô hình cuối; Logistic Regression dùng để kiểm tra chéo và diễn giải qua hệ số. Hạ ngưỡng của Random Forest xuống 0.4 cho Recall 0.79 trên validation và 0.83 trên test (Precision khoảng 0.65).
 
-![Confusion matrix, ROC và Precision-Recall của Logistic Regression và Random Forest trên kỳ 2014J](assets/readme/model-evaluation.png)
+![Confusion matrix, ROC và Precision-Recall của Logistic Regression và Random Forest đã tinh chỉnh trên tập test](assets/readme/model-evaluation.png)
 
 ### Biến nào phân biệt được nguy cơ?
 
@@ -241,8 +244,9 @@ Chọn kernel `.venv`, restart rồi chạy từ trên xuống. Notebook sẽ t�
 - Xác suất `predict_proba` chưa được hiệu chuẩn (calibration) nên chưa dùng trực tiếp làm "xác suất rủi ro" được.
 - Chưa có kiểm tra công bằng theo nhóm sinh viên (fairness audit).
 - Vẫn còn đa cộng tuyến giữa một số cặp biến (`n_late`, `submission_rate`, `active_but_no_submission` có VIF > 10). Điều này ảnh hưởng tới việc diễn giải hệ số của Logistic Regression.
-- Siêu tham số đang để mặc định. Có thể thử tinh chỉnh bằng cross-validation chia theo kỳ, và tối ưu ngưỡng theo năng lực tư vấn thực tế.
-- Capping P99 đang được tính trên toàn bộ dữ liệu trước khi chia train/test. Đưa bước này vào pipeline sẽ tách tiền xử lý chặt chẽ hơn.
+- Dữ liệu được chia ngẫu nhiên nên train, validation và test đều chứa sinh viên của cùng các kỳ học. Muốn kiểm tra khả năng dự đoán một kỳ mới hoàn toàn cần chia theo thời gian.
+- Lưới tinh chỉnh còn nhỏ (4 bộ cho Logistic Regression, 9 bộ cho Random Forest). Có thể mở rộng bằng cross-validation và tối ưu ngưỡng theo năng lực tư vấn thực tế.
+- Capping P99 đang được tính trên toàn bộ dữ liệu trước khi chia train/validation/test. Đưa bước này vào pipeline sẽ tách tiền xử lý chặt chẽ hơn.
 
 ## 👥 Thành viên
 
