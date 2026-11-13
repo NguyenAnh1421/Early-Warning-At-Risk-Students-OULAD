@@ -87,7 +87,7 @@ Các biến nhân khẩu học (giới tính, độ tuổi, vùng, IMD, học v�
 
 ```mermaid
 flowchart TD
-    A["Crawl 7 bảng CSV OULAD<br/>từ UCI"] --> B["%%sql + DuckDB<br/>đọc thẳng CSV"]
+    A["Đọc 7 bảng CSV OULAD<br/>từ data/raw/"] --> B["%%sql + DuckDB<br/>đọc thẳng CSV"]
     B --> C["module_cutoff · assess_due · vle_agg · assess_agg"]
     C --> D["Bảng df_raw<br/>Intergrated_data.csv"]
     D --> E["Làm sạch<br/>data dictionary · rò rỉ dữ liệu + missing (SQL) · duplicate · chuẩn hoá<br/>boxplot + xử lý outlier (log + chặn P99)"]
@@ -111,7 +111,7 @@ flowchart TD
 | Phần | Chương | Nội dung |
 | :---: | --- | --- |
 | **01** | Business Understanding | Bối cảnh, câu hỏi cốt lõi, định nghĩa target và mốc dự đoán. |
-| **02** | Thu thập dữ liệu | Nguồn dữ liệu, crawl 7 bảng CSV từ UCI, tích hợp bằng magic `%%sql` (DuckDB) thành một bảng phân tích (1 dòng = 1 sinh viên × 1 lớp học phần) và export CSV. |
+| **02** | Thu thập dữ liệu | Nguồn dữ liệu, lấy 7 bảng CSV từ file trong `data/raw/`, tích hợp bằng magic `%%sql` (DuckDB) thành một bảng phân tích (1 dòng = 1 sinh viên × 1 lớp học phần) và export CSV. |
 | **03** | Làm sạch &amp; tiền xử lý | Data dictionary, xử lý rò rỉ dữ liệu và missing theo nguyên nhân bằng `%%sql`, xử lý duplicate, chuẩn hoá kiểu dữ liệu, boxplot và xử lý outlier bằng log và chặn P99. |
 | **04** | EDA &amp; Feature Engineering | Phân tích đơn biến, song biến, đa biến (Spearman), tạo 5 biến mới + VIF. |
 | **05** | Mô hình &amp; đánh giá | Chia train/validation/test 70/15/15, pipeline `ColumnTransformer`, baseline Logistic Regression và Random Forest, tinh chỉnh siêu tham số trên validation, chọn ngưỡng dự đoán. |
@@ -199,7 +199,7 @@ Dữ liệu của từng giai đoạn đã có sẵn trong thư mục [`data/`](
 | [`data/cleaned/`](data/cleaned) | Sau làm sạch | `cleaned_dataset.csv`, output phần 3 của notebook. |
 | [`data/eda/`](data/eda) | Sau EDA & feature engineering | `features.csv`, output phần 4 của notebook. |
 
-Notebook đọc/ghi trực tiếp các file trong `data/`. Phần 2.2 tự tải file zip OULAD từ UCI nếu `data/raw/` chưa đủ 7 file CSV (`studentVle.csv` không có trong repo nên lần chạy đầu sẽ tải khoảng 47 MB). DuckDB đọc thẳng CSV nên không cần tạo database.
+Notebook đọc/ghi trực tiếp các file trong `data/`. Phần 2.2 lấy 7 bảng CSV có sẵn trong `data/raw/`; riêng `studentVle.csv` được lưu nén thành `studentVle.csv.gz` (khoảng 41 MB) và tự giải nén ở lần chạy đầu. DuckDB đọc thẳng CSV nên không cần tạo database.
 
 ### 4. Chạy notebook
 
