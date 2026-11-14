@@ -33,7 +33,7 @@
 
 **Tại thời điểm môn học mới tích luỹ được khoảng 40% trọng số điểm, có thể xác định những sinh viên sẽ trượt (`Fail`) hoặc rút khỏi học phần (`Withdrawn`) hay không?**
 
-Phát hiện sinh viên gặp khó khăn qua điểm giữa kỳ hay cuối kỳ thường là quá muộn. Trong khi đó, hệ thống học trực tuyến (VLE) ghi lại hằng ngày lượt đăng nhập, lượt truy cập tài liệu và lịch nộp bài. Dự án dùng các dấu vết hành vi này, cùng lịch sử học tập và điểm các bài kiểm tra đầu tiên, để lập danh sách cảnh báo sớm. Cố vấn học tập có thể dựa vào đó để ưu tiên hỗ trợ khi vẫn còn khoảng 45% thời lượng học phần.
+Phát hiện sinh viên gặp khó khăn qua điểm giữa kỳ hay cuối kỳ thường là quá muộn. Trong khi đó, hệ thống học trực tuyến (VLE) ghi lại hằng ngày lượt đăng nhập, lượt truy cập tài liệu và lịch nộp bài. Dự án dùng các dấu vết hành vi này, cùng lịch sử học tập và điểm các bài kiểm tra đầu tiên, để lập danh sách cảnh báo sớm. Cố vấn học tập có thể dựa vào đó để ưu tiên hỗ trợ khi trung bình vẫn còn khoảng 55% thời lượng học phần.
 
 Hai câu hỏi cốt lõi:
 
@@ -120,10 +120,10 @@ flowchart TD
 
 ### Điểm đáng chú ý trong pipeline
 
-- **Cutoff động theo từng lớp.** Mốc 40% rơi vào ngày 68 ở module EEE nhưng ngày 222 ở GGG. Một ngày cố định sẽ không công bằng giữa các môn.
+- **Cutoff động theo từng lớp.** Mốc 40% rơi vào ngày 68 ở module EEE nhưng ngày 222–229 ở GGG. Một ngày cố định sẽ không công bằng giữa các môn. Đặc trưng chỉ dùng dữ liệu trước ngày cutoff, nên bài kiểm tra đến hạn đúng ngày đó chưa được tính.
 - **`LEFT JOIN` để giữ sinh viên không hoạt động.** Sinh viên không click hay nộp bài nào trước cutoff là nhóm nguy cơ cao nhất. `INNER JOIN` sẽ xoá họ khỏi mẫu.
 - **Xử lý rò rỉ dữ liệu ở bước làm sạch (SQL).** Bỏ `date_unregistration`, loại sinh viên đã rút trước cutoff (đã rút thì không còn can thiệp được, giữ lại sẽ tạo nhãn hiển nhiên) và sinh viên đăng ký sau cutoff.
-- **Missing có nghĩa.** `avg_score` chỉ thiếu khi chưa nộp bài. Dữ liệu được tách thành 2 cờ: `dropout_no_activity` (at_risk 99.3%) và `active_but_no_submission` (53.7%).
+- **Missing có nghĩa.** `avg_score` chỉ thiếu khi chưa nộp bài. Dữ liệu được tách thành 2 cờ: `dropout_no_activity` (at_risk 99.3%) và `active_but_no_submission` (53.7%; khoảng 98% ở các môn có bài kiểm tra trước cutoff, khoảng 30% ở GGG, nơi chưa có bài nào để nộp).
 - **Tách riêng tập validation.** Siêu tham số và ngưỡng dự đoán được chọn trên validation; tập test chỉ dùng để báo cáo kết quả cuối.
 
 <a id="results"></a>
@@ -247,6 +247,7 @@ Chọn kernel `.venv`, restart rồi chạy từ trên xuống. Notebook sẽ t�
 - Dữ liệu được chia ngẫu nhiên nên train, validation và test đều chứa sinh viên của cùng các kỳ học. Muốn kiểm tra khả năng dự đoán một kỳ mới hoàn toàn cần chia theo thời gian.
 - Lưới tinh chỉnh còn nhỏ (4 bộ cho Logistic Regression, 9 bộ cho Random Forest). Có thể mở rộng bằng cross-validation và tối ưu ngưỡng theo năng lực tư vấn thực tế.
 - Capping P99 đang được tính trên toàn bộ dữ liệu trước khi chia train/validation/test. Đưa bước này vào pipeline sẽ tách tiền xử lý chặt chẽ hơn.
+- Môn GGG chỉ có bài thi cuối kỳ được tính điểm, nên cutoff rơi vào ngày 222–229, khi chỉ còn 8–15% thời lượng học phần, và không có điểm bài kiểm tra nào trước cutoff. Cảnh báo cho GGG đến muộn và chỉ dựa trên hành vi VLE.
 
 ## 👥 Thành viên
 

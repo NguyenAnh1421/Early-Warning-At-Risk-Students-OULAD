@@ -1,7 +1,7 @@
--- Tích hợp 7 bảng OULAD thành bảng phân tích df_raw (DuckDB, đọc thẳng CSV).
+-- Tích hợp dữ liệu OULAD (dùng 5 trong 7 bảng) thành bảng phân tích df_raw (DuckDB, đọc thẳng CSV).
 -- 1 dòng = 1 sinh viên × 1 lớp học phần. Mọi đặc trưng chỉ dùng dữ liệu TRƯỚC cutoff_day.
 
--- 0. Đọc 7 bảng CSV gốc ('?' = NULL)
+-- 0. Đọc 5 bảng CSV cần dùng ('?' = NULL); courses và vle không cần cho bài toán
 CREATE OR REPLACE VIEW assessments         AS SELECT * FROM read_csv('data/raw/assessments.csv',         nullstr = '?');
 CREATE OR REPLACE VIEW studentInfo         AS SELECT * FROM read_csv('data/raw/studentInfo.csv',         nullstr = '?');
 CREATE OR REPLACE VIEW studentRegistration AS SELECT * FROM read_csv('data/raw/studentRegistration.csv', nullstr = '?');
